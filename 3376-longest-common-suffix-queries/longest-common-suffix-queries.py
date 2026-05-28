@@ -1,43 +1,28 @@
-class TrieNode:
-    __slots__ = ['children', 'bestLen', 'bestIdx']
-    
-    def __init__(self):
-        self.children = {}
-        self.bestLen = float('inf')
-        self.bestIdx = float('inf')
-
-class Solution:
+class Solution(object):
     def stringIndices(self, wordsContainer, wordsQuery):
-        root = TrieNode()
         
-        for i, word in enumerate(wordsContainer):
-            n = len(word)
-            curr = root
-            
-            if n < curr.bestLen or (n == curr.bestLen and i < curr.bestIdx):
-                curr.bestLen = n
-                curr.bestIdx = i
+        trie = [{'best': min(range(len(wordsContainer)), 
+                             key=lambda i: len(wordsContainer[i]))}]
+        
+        for idx, word in enumerate(wordsContainer):
+            node = 0
+            for ch in reversed(word):
+                if ch not in trie[node]:
+                    trie.append({'best': idx})
+                    trie[node][ch] = len(trie) - 1
+                node = trie[node][ch]
                 
-            for char in reversed(word):
-                if char not in curr.children:
-                    curr.children[char] = TrieNode()
-                
-                curr = curr.children[char]
-                
-                if n < curr.bestLen or (n == curr.bestLen and i < curr.bestIdx):
-                    curr.bestLen = n
-                    curr.bestIdx = i
-                    
+                cur_best = trie[node]['best']
+                if len(word) < len(wordsContainer[cur_best]):
+                    trie[node]['best'] = idx
+
         ans = []
-        
-        for query in wordsQuery:
-            curr = root
-            
-            for char in reversed(query):
-                if char not in curr.children:
+        for word in wordsQuery:
+            node = 0
+            for ch in reversed(word):
+                if ch not in trie[node]:
                     break
-                curr = curr.children[char]
-            
-            ans.append(curr.bestIdx)
-            
+                node = trie[node][ch]
+            ans.append(trie[node]['best'])
+
         return ans
